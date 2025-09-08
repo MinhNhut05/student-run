@@ -16,9 +16,9 @@ const SORT_OPTIONS = [
   { value: "rating_desc", label: "Đánh giá cao nhất" }, // <-- Thêm option mới
 ];
 
-// Define amenities
+// Define amenities (aligned with backend schema)
 const ALL_AMENITIES = [
-  { id: "wifi", label: "Wi-Fi" },
+  { id: "wifi", label: "Wi‑Fi" },
   { id: "air_conditioner", label: "Máy lạnh" },
   { id: "fridge", label: "Tủ lạnh" },
   { id: "washing_machine", label: "Máy giặt" },
@@ -26,10 +26,10 @@ const ALL_AMENITIES = [
   { id: "security", label: "Bảo vệ" },
   { id: "private_bathroom", label: "WC riêng" },
   { id: "kitchen", label: "Nhà bếp" },
-  { id: "balcony", label: "Ban công" },
   { id: "window", label: "Cửa sổ" },
-  { id: "bed", label: "Giường" },
-  { id: "wardrobe", label: "Tủ quần áo" },
+  { id: "balcony", label: "Ban công" },
+  { id: "water_heater", label: "Bình nóng lạnh" },
+  { id: "tv", label: "TV" },
 ];
 
 const RoomListPage = () => {
@@ -51,9 +51,7 @@ const RoomListPage = () => {
   // Additional state for enhanced filtering
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [sortBy, setSortBy] = useState("newest");
-  const [ward, setWard] = useState("");
-  const [roomType, setRoomType] = useState("");
-  const [maxOccupancy, setMaxOccupancy] = useState("");
+  // Removed unsupported filters: ward, roomType, maxOccupancy
   const [amenities, setAmenities] = useState([]);
 
   useEffect(() => {
@@ -124,14 +122,11 @@ const RoomListPage = () => {
     setKeyword("");
     setCity("");
     setDistrict("");
-    setWard("");
     setMinPrice("");
     setMaxPrice("");
     setMinArea("");
     setMaxArea("");
     setSortBy("newest");
-    setRoomType("");
-    setMaxOccupancy("");
     setAmenities([]);
   };
 
@@ -207,12 +202,7 @@ const RoomListPage = () => {
             <button onClick={() => setMaxArea("")}>×</button>
           </span>
         )}
-        {roomType && (
-          <span className="filter-tag">
-            Loại phòng: {roomType}{" "}
-            <button onClick={() => setRoomType("")}>×</button>
-          </span>
-        )}
+        {/* roomType filter tag removed (unsupported) */}
         {amenities.length > 0 && (
           <span className="filter-tag">
             Tiện nghi: {amenities.length}{" "}
@@ -288,12 +278,7 @@ const RoomListPage = () => {
                   value={district}
                   onChange={(e) => setDistrict(e.target.value)}
                 />
-                <input
-                  type="text"
-                  placeholder="Phường/Xã (tùy chọn)"
-                  value={ward}
-                  onChange={(e) => setWard(e.target.value)}
-                />
+                {/* ward input removed (unsupported) */}
               </div>
 
               <div className="filter-group">
@@ -338,33 +323,9 @@ const RoomListPage = () => {
                 </div>
               </div>
 
-              <div className="filter-group">
-                <label htmlFor="roomType">Loại phòng</label>
-                <select
-                  id="roomType"
-                  value={roomType}
-                  onChange={(e) => setRoomType(e.target.value)}
-                >
-                  <option value="">Tất cả</option>
-                  <option value="phong_tro_khep_kin">Phòng trọ khép kín</option>
-                  <option value="phong_tro_chung_wc">Phòng trọ chung WC</option>
-                  <option value="chung_cu_mini">Chung cư mini</option>
-                  <option value="nha_nguyen_can">Nhà nguyên căn</option>
-                  <option value="o_ghep">Ở ghép</option>
-                </select>
-              </div>
+              {/* roomType select removed (unsupported) */}
 
-              <div className="filter-group">
-                <label htmlFor="maxOccupancy">Số người ở tối đa</label>
-                <input
-                  type="number"
-                  id="maxOccupancy"
-                  placeholder="Không giới hạn"
-                  value={maxOccupancy}
-                  onChange={(e) => setMaxOccupancy(e.target.value)}
-                  min="1"
-                />
-              </div>
+              {/* maxOccupancy input removed (unsupported) */}
 
               <div className="filter-group">
                 <label>Tiện nghi</label>

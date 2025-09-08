@@ -25,6 +25,7 @@ const getRooms = asyncHandler(async (req, res) => {
     findQuery.$or = [
       { title: { $regex: keyword, $options: "i" } },
       { description: { $regex: keyword, $options: "i" } },
+      { address: { $regex: keyword, $options: "i" } },
     ];
   }
 
@@ -219,6 +220,57 @@ const updateRoom = asyncHandler(async (req, res) => {
   room.bedrooms = bedrooms !== undefined ? Number(bedrooms) : room.bedrooms;
   room.bathrooms = bathrooms !== undefined ? Number(bathrooms) : room.bathrooms;
   room.images = [...existingImageUrls, ...newImageUrls];
+
+  // --- Amenities update logic ---
+  // Parse incoming amenities from req.body in the format amenities[key] = "true"
+  const newAmenities = {};
+  Object.keys(req.body).forEach((key) => {
+    if (key.startsWith("amenities[") && key.endsWith("]")) {
+      const amenityKey = key.substring(10, key.length - 1);
+      newAmenities[amenityKey] = req.body[key] === "true";
+    }
+  });
+
+  const amenityKeys = [
+    "wifi",
+    "air_conditioner",
+    "washing_machine",
+    "fridge",
+    "parking",
+    "security",
+    "private_bathroom",
+    "kitchen",
+    "window",
+    "balcony",
+    "water_heater",
+    "tv",
+  ];
+
+  const amenitiesReset = req.body.amenitiesReset === "true";
+  if (!room.amenities) {
+    room.amenities = {};
+  }
+
+  if (amenitiesReset) {
+    // 1) Reset all amenity keys to false
+    amenityKeys.forEach((key) => {
+      room.amenities[key] = false;
+    });
+
+    // 2) Enable amenities provided in the request
+    Object.entries(newAmenities).forEach(([key, value]) => {
+      if (amenityKeys.includes(key) && value === true) {
+        room.amenities[key] = true;
+      }
+    });
+  } else if (Object.keys(newAmenities).length > 0) {
+    // Merge update: set provided keys to their boolean value (typically true)
+    Object.entries(newAmenities).forEach(([key, value]) => {
+      if (amenityKeys.includes(key)) {
+        room.amenities[key] = !!value;
+      }
+    });
+  }
 
   const updatedRoom = await room.save();
   res.json(updatedRoom);

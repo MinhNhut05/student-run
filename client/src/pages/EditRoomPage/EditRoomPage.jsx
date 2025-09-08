@@ -4,6 +4,22 @@ import { useAuth } from "../../context/authContext";
 import roomService from "../../services/roomService";
 import "./EditRoomPage.scss";
 
+// Amenity keys used across the system
+const ALL_AMENITIES = [
+  "wifi",
+  "air_conditioner",
+  "washing_machine",
+  "fridge",
+  "parking",
+  "security",
+  "private_bathroom",
+  "kitchen",
+  "window",
+  "balcony",
+  "water_heater",
+  "tv",
+];
+
 const EditRoomPage = () => {
   const { id: roomId } = useParams();
   const { user } = useAuth();
@@ -18,6 +34,14 @@ const EditRoomPage = () => {
   const [area, setArea] = useState("");
   const [bedrooms, setBedrooms] = useState("");
   const [bathrooms, setBathrooms] = useState("");
+
+  // Amenities state: initialize all keys to false
+  const [amenities, setAmenities] = useState(() =>
+    ALL_AMENITIES.reduce((acc, key) => {
+      acc[key] = false;
+      return acc;
+    }, {})
+  );
 
   const [existingImages, setExistingImages] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -68,6 +92,19 @@ const EditRoomPage = () => {
         setBedrooms(roomData.bedrooms?.toString() || "");
         setBathrooms(roomData.bathrooms?.toString() || "");
         setExistingImages(roomData.images || []);
+
+        // Update amenities state from API data
+        setAmenities(() => {
+          const next = ALL_AMENITIES.reduce((acc, key) => {
+            acc[key] = false;
+            return acc;
+          }, {});
+          const apiAmenities = roomData.amenities || {};
+          ALL_AMENITIES.forEach((key) => {
+            if (apiAmenities[key] === true) next[key] = true;
+          });
+          return next;
+        });
       } catch (err) {
         setFetchError("Không thể tải dữ liệu phòng");
       } finally {
@@ -135,6 +172,14 @@ const EditRoomPage = () => {
 
     formData.append("existingImages", JSON.stringify(existingImages));
 
+    // Ensure backend resets amenities then reapplies the ones currently checked
+    formData.append("amenitiesReset", "true");
+    ALL_AMENITIES.forEach((key) => {
+      if (amenities[key]) {
+        formData.append(`amenities[${key}]`, "true");
+      }
+    });
+
     selectedFiles.forEach((file) => {
       formData.append("images", file);
     });
@@ -152,6 +197,11 @@ const EditRoomPage = () => {
     } finally {
       setSubmitLoading(false);
     }
+  };
+
+  const handleAmenityChange = (e) => {
+    const { name, checked } = e.target;
+    setAmenities((prev) => ({ ...prev, [name]: checked }));
   };
 
   if (fetchLoading)
@@ -405,6 +455,41 @@ const EditRoomPage = () => {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Amenities Section - Full Width */}
+          <div
+            className="form-section amenities-section"
+            style={{ gridColumn: "1 / -1" }}
+          >
+            <h3 className="section-title">⭐ Tiện nghi</h3>
+            <div className="amenities-grid">
+              {ALL_AMENITIES.map((key) => (
+                <div key={key} className="amenity-checkbox">
+                  <input
+                    type="checkbox"
+                    id={`amenity-${key}`}
+                    name={key}
+                    checked={!!amenities[key]}
+                    onChange={handleAmenityChange}
+                  />
+                  <label htmlFor={`amenity-${key}`}>
+                    {key === "wifi" && "📶 Wi-Fi"}
+                    {key === "air_conditioner" && "❄️ Máy lạnh"}
+                    {key === "washing_machine" && "🧺 Máy giặt"}
+                    {key === "fridge" && "🧊 Tủ lạnh"}
+                    {key === "parking" && "🏍️ Chỗ để xe"}
+                    {key === "security" && "🛡️ Bảo vệ"}
+                    {key === "private_bathroom" && "🚿 WC riêng"}
+                    {key === "kitchen" && "🍳 Nhà bếp"}
+                    {key === "window" && "🪟 Cửa sổ"}
+                    {key === "balcony" && "🏡 Ban công"}
+                    {key === "water_heater" && "🔥 Máy nước nóng"}
+                    {key === "tv" && "📺 TV"}
+                  </label>
+                </div>
+              ))}
             </div>
           </div>
 
